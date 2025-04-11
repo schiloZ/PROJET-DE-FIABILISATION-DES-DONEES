@@ -1,11 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import formidable from "formidable";
 import { promises as fs } from "fs";
+import path from "path";
 import { Readable } from "stream";
 import db from "../../../libs/db";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+const UPLOAD_DIR =
+  "/Users/schiloibo/Documents/next/saas-fiabilisation/public/uploads";
+
+// Ensure upload directory exists
+const ensureUploadDir = async () => {
+  try {
+    await fs.access(UPLOAD_DIR);
+  } catch (error) {
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+  }
+};
 
 export const config = {
   api: {
@@ -17,6 +29,9 @@ export async function POST(request) {
   let connection; // Declare connection variable outside try block for rollback
 
   try {
+    // Ensure upload directory exists
+    await ensureUploadDir();
+
     // 1. Verify JWT token from Authorization header
     const authHeader = request.headers.get("authorization");
     console.log("Authorization Header:", authHeader);
@@ -57,7 +72,7 @@ export async function POST(request) {
     const loggedInUser = users[0];
     const agentName = `${loggedInUser.prenom} ${loggedInUser.nom}`.trim();
 
-    // 3. Parse the multipart form data
+    // 3. Parse the multipart form data with modified formidable config to save files
     const readableStream = request.body;
     if (!readableStream) {
       return NextResponse.json(
@@ -70,7 +85,28 @@ export async function POST(request) {
     const nodeStream = Readable.from(readableStream);
     nodeStream.headers = headers;
 
-    const form = formidable({ multiples: true });
+    // Configure formidable to save files to disk
+    const form = formidable({
+      multiples: true,
+      uploadDir: UPLOAD_DIR,
+      keepExtensions: true,
+      maxFileSize: 15 * 1024 * 1024, // 15MB limit
+      filter: (part) => {
+        // Filter to allow only image files
+        return (
+          part.name === "clientPhoto" ||
+          part.name === "clientSignature" ||
+          part.name === "cniBack" ||
+          part.name === "cniFront"
+        );
+      },
+      filename: (name, ext, part, form) => {
+        // Create unique filenames
+        const timestamp = Date.now();
+        const random = Math.floor(Math.random() * 1000);
+        return `${part.name}-${timestamp}-${random}${ext}`;
+      },
+    });
 
     const { fields, files } = await new Promise((resolve, reject) => {
       form.parse(nodeStream, (err, fields, files) => {
@@ -79,17 +115,22 @@ export async function POST(request) {
       });
     });
 
-    const fileToBuffer = async (file) => {
+    // Function to get the relative path for a file
+    const getFilePath = (file) => {
       if (!file) return null;
       const fileArray = Array.isArray(file) ? file : [file];
-      return fileArray[0] ? await fs.readFile(fileArray[0].filepath) : null;
+      if (!fileArray[0]) return null;
+
+      // Get relative path from public directory
+      const relativePath = `/uploads/${path.basename(fileArray[0].filepath)}`;
+      return relativePath;
     };
 
     // 4. Get a connection from the pool and start a transaction
     connection = await db.getConnection();
     await connection.beginTransaction();
 
-    // 5. Insert into particulier table
+    // 5. Insert into particulier table with file paths instead of file content
     const particulierSql = `
     INSERT INTO particulier (
       accountType, activitySector, address, agence, authorization, bankDomiciliation,
@@ -99,7 +140,7 @@ export async function POST(request) {
       mobile1Prefix, mobile2Number, mobile2Prefix, motherName, nationality, numberOfChildren,
       otherActivities, residenceCountry, savingsAccountNumber, secondNationality,
       otherAccountNumber, spouseEmployer, spouseJobFunction, spouseOccupation,
-      clientPhoto, clientSignature, cniBack, cniFront, status
+      clientPhotoPath, clientSignaturePath, cniBackPath, cniFrontPath, status
     ) VALUES (${Array(44).fill("?").join(", ")})
   `;
 
@@ -143,10 +184,10 @@ export async function POST(request) {
       fields.spouseEmployer?.[0] || null,
       fields.spouseJobFunction?.[0] || null,
       fields.spouseOccupation?.[0] || null,
-      await fileToBuffer(files.clientPhoto),
-      await fileToBuffer(files.clientSignature),
-      await fileToBuffer(files.cniBack),
-      await fileToBuffer(files.cniFront),
+      getFilePath(files.clientPhoto),
+      getFilePath(files.clientSignature),
+      getFilePath(files.cniBack),
+      getFilePath(files.cniFront),
       fields.status?.[0] || "NON FIABILISER",
     ];
     console.log(loggedInUser);
@@ -163,6 +204,7 @@ export async function POST(request) {
       particulierValues
     );
     const clientId = result.insertId;
+
     // 6. Insert into historique table
     const historiqueSql = `
       INSERT INTO historique (
@@ -191,7 +233,16 @@ export async function POST(request) {
     await connection.commit();
 
     return NextResponse.json(
-      { message: "Enregistrement réussi", clientId },
+      {
+        message: "Enregistrement réussi",
+        clientId,
+        filePaths: {
+          clientPhoto: getFilePath(files.clientPhoto),
+          clientSignature: getFilePath(files.clientSignature),
+          cniBack: getFilePath(files.cniBack),
+          cniFront: getFilePath(files.cniFront),
+        },
+      },
       { status: 200 }
     );
   } catch (error) {

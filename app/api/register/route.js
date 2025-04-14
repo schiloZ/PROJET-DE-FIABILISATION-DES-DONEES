@@ -90,7 +90,8 @@ export async function POST(request) {
       multiples: true,
       uploadDir: UPLOAD_DIR,
       keepExtensions: true,
-      maxFileSize: 15 * 1024 * 1024, // 15MB limit
+      maxFileSize: 30 * 1024 * 1024, // 20MB per file limit
+      maxTotalFileSize: 100 * 1024 * 1024, // 30MB total for all files
       filter: (part) => {
         // Filter to allow only image files
         return (
@@ -250,6 +251,17 @@ export async function POST(request) {
     if (connection) {
       await connection.rollback();
       connection.release(); // Release the connection back to the pool
+    }
+
+    // Handle file size limit exceeded error
+    if (error.code === 1009) {
+      return NextResponse.json(
+        {
+          message:
+            "La taille totale des fichiers dépasse la limite autorisée (30MB maximum)",
+        },
+        { status: 413 }
+      );
     }
     // Handle duplicate entry error
     if (

@@ -106,10 +106,10 @@ const Final = () => {
           </svg>
         </div>
         <div className="mt-3 text-xl font-semibold uppercase text-green-500">
-          Congratulations!
+          Felicitation !
         </div>
         <div className="text-lg font-semibold text-gray-500">
-          Your Account has been created.
+          Appuyer sur le bouton ci-dessous pour enregistrer le client
         </div>
         {error && <div className="mt-3 text-red-500">{error}</div>}
         {!isSaved ? (
@@ -122,7 +122,7 @@ const Final = () => {
           >
             {isSubmitting
               ? "Enregistrement en cours..."
-              : "Save User Information"}
+              : "Donnée du Client collectée avec succès"}
           </button>
         ) : (
           <div className="mt-10">
@@ -130,7 +130,7 @@ const Final = () => {
               href="/" // Adjust this route to your new user creation page
               className="text-blue-500 hover:underline font-semibold"
             >
-              Create a New User
+              Enregistrer un nouveau client
             </Link>
           </div>
         )}

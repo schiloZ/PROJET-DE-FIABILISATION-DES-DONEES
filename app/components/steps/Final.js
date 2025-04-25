@@ -106,10 +106,8 @@ const Final = () => {
           </svg>
         </div>
         <div className="mt-3 text-xl font-semibold uppercase text-green-500">
-          Felicitation !
-        </div>
-        <div className="text-lg font-semibold text-gray-500">
-          Appuyer sur le bouton ci-dessous pour enregistrer le client
+          Felicitation ! Appuyer sur le bouton ci-dessous pour enregistrer le
+          client.
         </div>
         {error && <div className="mt-3 text-red-500">{error}</div>}
         {!isSaved ? (
@@ -122,7 +120,7 @@ const Final = () => {
           >
             {isSubmitting
               ? "Enregistrement en cours..."
-              : "Donnée du Client collectée avec succès"}
+              : "J'enregistre le client"}
           </button>
         ) : (
           <div className="mt-10">

@@ -20,7 +20,7 @@ export default function forms() {
     "COMPTE DU CLIENT",
     "ACTIVITES PROFESSIONNELLES ",
     "INFORMATIONS NON OBLIGATOIRE",
-    "Final",
+    "Validation",
   ];
   const displaySteps = (step) => {
     switch (step) {

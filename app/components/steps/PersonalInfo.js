@@ -2,7 +2,6 @@
 import { StepperContext } from "../../context/StepperContext";
 import React, { useContext, useEffect, useState, useCallback } from "react";
 import countries from "../../utils/data/countries.json";
-import prefixes from "../../utils/data/prefixes.json";
 
 // Define requiredFields outside the component
 const requiredFields = [
@@ -19,7 +18,6 @@ const requiredFields = [
   "expiryDate",
   "issueDate",
   "issuePlace",
-  "mobile1Prefix",
   "mobile1Number",
   "email",
   "address",
@@ -42,21 +40,21 @@ const PersonalInfo = ({ setStepValid }) => {
     });
 
     if (userData["mobile1Number"]) {
-      if (!/^\d+$/.test(userData["mobile1Number"])) {
+      // Validate full phone number with exactly 14 characters (e.g., +2250584185367)
+      if (!/^\+\d{13}$/.test(userData["mobile1Number"])) {
         newErrors["mobile1Number"] =
-          "Le numéro doit contenir uniquement des chiffres";
-        isValid = false;
-      } else if (userData["mobile1Number"].length !== 10) {
-        newErrors["mobile1Number"] =
-          "Le numéro doit contenir exactement 10 chiffres";
+          "Le numéro doit commencer par '+' suivi de 13 chiffres (14 caractères au total)";
         isValid = false;
       }
     }
 
-    if (userData["mobile2Number"] && !/^\d+$/.test(userData["mobile2Number"])) {
-      newErrors["mobile2Number"] =
-        "Le numéro doit contenir uniquement des chiffres";
-      isValid = false;
+    if (userData["mobile2Number"]) {
+      // Optional mobile2Number validation
+      if (!/^\+\d{13}$/.test(userData["mobile2Number"])) {
+        newErrors["mobile2Number"] =
+          "Le numéro doit commencer par '+' suivi de 13 chiffres (14 caractères au total)";
+        isValid = false;
+      }
     }
 
     if (userData.firstName && userData.firstName.length < 3) {
@@ -96,15 +94,9 @@ const PersonalInfo = ({ setStepValid }) => {
       isValid = false;
     }
 
-    if (userData["mobile2Number"] && !/^\d+$/.test(userData["mobile2Number"])) {
-      newErrors["mobile2Number"] =
-        "Le numéro doit contenir uniquement des chiffres";
-      isValid = false;
-    }
-
     setErrors(newErrors);
     return isValid;
-  }, [userData, setErrors]); // No need for requiredFields here
+  }, [userData, setErrors]);
 
   useEffect(() => {
     const isValid = validateFields();
@@ -137,7 +129,7 @@ const PersonalInfo = ({ setStepValid }) => {
             Lien pour plus de détails
           </a>
         </div>
-        <div className="bg-white mt-4 my-2 p-1 flex space-x-4 sm:space-x-8 md:space-x-12 sm:mt-10 md:mt-10">
+        <div className="bg-white mt-25 md:mt-10 my-2 p-1 flex gap-2 ">
           <label className="flex items-center">
             <input
               type="radio"
@@ -408,67 +400,34 @@ const PersonalInfo = ({ setStepValid }) => {
         <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
           Mobile 1 (WhatsApp si possible)
         </div>
-        <div className="flex space-x-2">
-          <select
-            name="mobile1Prefix"
-            onChange={handleChange}
-            value={userData["mobile1Prefix"] || "+385"}
-            required
-            className="bg-white my-2 p-1 flex border border-gray-200 rounded"
-          >
-            <option value="">Préfixe</option>
-            {prefixes.map((item, index) => (
-              <option key={index} value={item.prefix}>
-                {`${item.country} (${item.prefix})`}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            name="mobile1Number"
-            onChange={handleChange}
-            value={userData["mobile1Number"] || ""}
-            placeholder="0102010101"
-            className="bg-white my-2 p-1 flex border border-gray-200 rounded w-full"
-            maxLength={10}
-          />
-        </div>
-        <div className="flex flex-col">
-          {errors.mobile1Number && (
-            <p className="text-red-500 text-xs">{errors.mobile1Number}</p>
-          )}
-        </div>
+        <input
+          type="text"
+          name="mobile1Number"
+          onChange={handleChange}
+          value={userData["mobile1Number"] || ""}
+          placeholder="Exemple: +2250584185367"
+          required
+          className="bg-white my-2 p-1 flex border border-gray-200 rounded w-full"
+          maxLength={14}
+        />
+        {errors.mobile1Number && (
+          <p className="text-red-500 text-xs">{errors.mobile1Number}</p>
+        )}
       </div>
       {/* Mobile 2 (WhatsApp) */}
       <div className="w-full mx-2 flex-1">
         <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
           Mobile 2 (WhatsApp)
         </div>
-        <div className="flex space-x-2">
-          <select
-            name="mobile2Prefix"
-            onChange={handleChange}
-            value={userData["mobile2Prefix"] || "+385"}
-            className="bg-white my-2 p-1 flex border border-gray-200 rounded"
-          >
-            <option value="">Préfixe</option>
-            {prefixes.map((item, index) => (
-              <option key={index} value={item.prefix}>
-                {`${item.country} (${item.prefix})`}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            name="mobile2Number"
-            onChange={handleChange}
-            value={userData["mobile2Number"] || ""}
-            placeholder="0102010101"
-            required
-            className="bg-white my-2 p-1 flex border border-gray-200 rounded w-full"
-            maxLength={10}
-          />
-        </div>
+        <input
+          type="text"
+          name="mobile2Number"
+          onChange={handleChange}
+          value={userData["mobile2Number"] || ""}
+          placeholder="Exemple: +2250584185367"
+          className="bg-white my-2 p-1 flex border border-gray-200 rounded w-full"
+          maxLength={14}
+        />
         {errors.mobile2Number && (
           <p className="text-red-500 text-xs">{errors.mobile2Number}</p>
         )}

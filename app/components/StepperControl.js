@@ -12,7 +12,7 @@ const StepperControl = ({ handleClick, currentStep, steps, isStepValid }) => {
           currentStep === 1 ? "opacity-50 cursor-not-allowed" : ""
         }`}
       >
-        Back
+        Precedent
       </button>
 
       {/* Next Button */}
@@ -24,7 +24,7 @@ const StepperControl = ({ handleClick, currentStep, steps, isStepValid }) => {
         }`}
         disabled={!isStepValid}
       >
-        {currentStep === steps.length - 1 ? "Confirm" : "Next"}
+        {currentStep === steps.length - 1 ? "CONFIRMer" : "SUIVANT"}
       </button>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 import { StepperContext } from "../../context/StepperContext";
 import React, { useContext, useEffect, useState, useCallback } from "react";
+import activitySectors from "../../utils/data/activitySectors.json";
 
 const Review = ({ setStepValid }) => {
   const { userData, setUserData } = useContext(StepperContext);
@@ -49,15 +50,24 @@ const Review = ({ setStepValid }) => {
       }
     });
 
+    // Validation pour le champ "otherActivity" si "activitySector" est "Autre"
+    if (
+      userData.activitySector === "Autre" &&
+      (!userData.otherActivity || userData.otherActivity.trim() === "")
+    ) {
+      newErrors.otherActivity = "Veuillez préciser le secteur d'activité";
+      isValid = false;
+    }
+
     setErrors(newErrors);
     return isValid;
-  }, [userData, setErrors]); // Dependencies of validateFields
+  }, [userData, setErrors]);
 
   // Mettre à jour la validation à chaque changement de userData
   useEffect(() => {
     const isValid = validateFields();
     setStepValid(isValid);
-  }, [validateFields, setStepValid]); // Include memoized validateFields and setStepValid
+  }, [validateFields, setStepValid]);
 
   // Gérer les changements dans les champs
   const handleChange = (e) => {
@@ -97,26 +107,64 @@ const Review = ({ setStepValid }) => {
       {/* Secteur d’activité */}
       <div className="w-full mx-2 flex-1">
         <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
-          Secteur d&apos;activité
+          Secteur d'activité
         </div>
-        <input
-          type="text"
+        <select
           name="activitySector"
           onChange={handleChange}
           value={userData["activitySector"] || ""}
-          placeholder="Secteur d’activité"
           required
           className="bg-white my-2 p-1 flex border border-gray-200 rounded w-full"
-        />
+        >
+          <option value="">Sélectionnez un secteur</option>
+          {activitySectors.secteurs_d_activites.map((secteur, index) => (
+            <optgroup key={index} label={secteur.secteur}>
+              {secteur.sous_secteurs.map((sousSecteur, subIndex) => (
+                <option key={subIndex} value={sousSecteur}>
+                  {sousSecteur}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+          <option value="Autre">Autre (préciser)</option>
+        </select>
+        {userData.activitySector === "Autre" && (
+          <input
+            type="text"
+            name="otherActivity"
+            onChange={handleChange}
+            value={userData["otherActivity"] || ""}
+            placeholder="Précisez votre secteur d'activité"
+            className="bg-white my-2 p-1 flex border border-gray-200 rounded w-full"
+          />
+        )}
         {errors.activitySector && (
           <p className="text-red-500 text-xs">{errors.activitySector}</p>
         )}
+        {errors.otherActivity && userData.activitySector === "Autre" && (
+          <p className="text-red-500 text-xs">{errors.otherActivity}</p>
+        )}
       </div>
 
-      {/* Tranche de revenue */}
+      {/* Autres activités annexes */}
       <div className="w-full mx-2 flex-1">
         <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
-          Tranche de revenue
+          Autres activités annexes
+        </div>
+        <input
+          type="text"
+          name="otherActivities"
+          onChange={handleChange}
+          value={userData["otherActivities"] || ""}
+          placeholder="Décrivez vos autres activités"
+          className="bg-white my-2 p-1 flex border border-gray-200 rounded w-full"
+        />
+      </div>
+
+      {/* Tranche de revenu */}
+      <div className="w-full mx-2 flex-1">
+        <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
+          Tranche de revenu
         </div>
         <select
           name="incomeRange"
@@ -129,7 +177,18 @@ const Review = ({ setStepValid }) => {
           <option value="Inférieur à 100k">Inférieur à 100k</option>
           <option value="Entre 100k et 350k">Entre 100k et 350k</option>
           <option value="Entre 450k et 1000k">Entre 450k et 1000k</option>
+          <option value="Autre">Autre (préciser)</option>
         </select>
+        {userData.incomeRange === "Autre" && (
+          <input
+            type="text"
+            name="otherIncome"
+            onChange={handleChange}
+            value={userData["otherIncome"] || ""}
+            placeholder="Précisez votre tranche de revenu"
+            className="bg-white my-2 p-1 flex border border-gray-200 rounded w-full"
+          />
+        )}
         {errors.incomeRange && (
           <p className="text-red-500 text-xs">{errors.incomeRange}</p>
         )}
@@ -226,7 +285,7 @@ const Review = ({ setStepValid }) => {
           Êtes-vous domiciliés dans une autre banque ?
         </div>
         <div className="flex space-x-4 mt-2">
-          <label className="flex items-center">
+          <label className="flex Prince2Prince3flex items-center">
             <input
               type="radio"
               name="bankDomiciliation"
@@ -291,7 +350,7 @@ const Review = ({ setStepValid }) => {
       {/* Carte Nationale d'Identité (CNI) Recto */}
       <div className="w-full mx-2 flex-1">
         <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
-          Carte Nationale d&apos;Identité (CNI) Recto
+          Carte Nationale d'Identité (CNI) Recto
         </div>
         <input
           type="file"
@@ -308,7 +367,7 @@ const Review = ({ setStepValid }) => {
       {/* Carte Nationale d'Identité (CNI) Verso */}
       <div className="w-full mx-2 flex-1">
         <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
-          Carte Nationale d&apos;Identité (CNI) Verso
+          Carte Nationale d'Identité (CNI) Verso
         </div>
         <input
           type="file"

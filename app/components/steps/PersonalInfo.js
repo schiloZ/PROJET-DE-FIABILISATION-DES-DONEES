@@ -19,7 +19,6 @@ const requiredFields = [
   "issueDate",
   "issuePlace",
   "mobile1Number",
-  "email",
   "address",
   "residenceCountry",
 ];
@@ -104,8 +103,9 @@ const PersonalInfo = ({ setStepValid }) => {
   }, [validateFields, setStepValid]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUserData({ ...userData, [name]: value });
+    const { name, value, type } = e.target;
+    const uppercasedValue = type === "text" ? value.toUpperCase() : value;
+    setUserData({ ...userData, [name]: uppercasedValue });
   };
 
   useEffect(() => {
@@ -216,7 +216,7 @@ const PersonalInfo = ({ setStepValid }) => {
       {/* Prénoms */}
       <div className="w-full mx-2 flex-1">
         <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
-          Prénoms
+          Prénom(s)
         </div>
         <input
           type="text"
@@ -269,19 +269,32 @@ const PersonalInfo = ({ setStepValid }) => {
       {/* Sexe */}
       <div className="w-full mx-2 flex-1">
         <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
-          Sexe
+          GENRE
         </div>
-        <select
-          name="gender"
-          onChange={handleChange}
-          value={userData["gender"] || ""}
-          required
-          className="bg-white my-2 p-1 flex border border-gray-200 rounded w-full"
-        >
-          <option value="">Sélectionnez</option>
-          <option value="M">M</option>
-          <option value="F">F</option>
-        </select>
+        <div className="flex items-center space-x-4 my-2">
+          <label className="inline-flex items-center">
+            <input
+              type="radio"
+              name="gender"
+              value="M"
+              checked={userData["gender"] === "M"}
+              onChange={handleChange}
+              className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+            />
+            <span className="ml-2">Masculin</span>
+          </label>
+          <label className="inline-flex items-center">
+            <input
+              type="radio"
+              name="gender"
+              value="F"
+              checked={userData["gender"] === "F"}
+              onChange={handleChange}
+              className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+            />
+            <span className="ml-2">Féminin</span>
+          </label>
+        </div>
         {errors.gender && (
           <p className="text-red-500 text-xs">{errors.gender}</p>
         )}
@@ -365,7 +378,7 @@ const PersonalInfo = ({ setStepValid }) => {
       {/* Date de délivrance */}
       <div className="w-full mx-2 flex-1">
         <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
-          Date de délivrance
+          Date de d'émission
         </div>
         <input
           type="date"
@@ -381,7 +394,7 @@ const PersonalInfo = ({ setStepValid }) => {
       {/* Lieu de délivrance */}
       <div className="w-full mx-2 flex-1">
         <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
-          Lieu de délivrance
+          Lieu d'émission
         </div>
         <input
           type="text"
@@ -488,6 +501,21 @@ const PersonalInfo = ({ setStepValid }) => {
         {errors.residenceCountry && (
           <p className="text-red-500 text-xs">{errors.residenceCountry}</p>
         )}
+      </div>
+
+      {/* Nom de la mère */}
+      <div className="w-full mx-2 flex-1">
+        <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
+          Nom de la mère
+        </div>
+        <input
+          type="text"
+          name="motherName"
+          onChange={handleChange}
+          value={userData["motherName"] || ""}
+          placeholder="Nom de la mère"
+          className="bg-white my-2 p-1 flex border border-gray-200 rounded w-full"
+        />
       </div>
     </div>
   );

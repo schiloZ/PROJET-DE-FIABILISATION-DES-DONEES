@@ -1,0 +1,48 @@
+{
+  "secteurs_d_activites": [
+    {
+      "secteur": "Primaire",
+      "sous_secteurs": [
+        "Agriculture",
+        "Élevage",
+        "Pêche",
+        "Exploitation forestière",
+        "Extraction minière"
+      ]
+    },
+    {
+      "secteur": "Secondaire",
+      "sous_secteurs": [
+        "Agro-industrie",
+        "Transformation de produits agricoles",
+        "Industrie manufacturière",
+        "Construction",
+        "Production d'électricité",
+        "Raffinage de pétrole",
+        "Exploitation et extraction d'hydrocarbures",
+        "Fabrication de produits en bois",
+        "Textile",
+        "Production de matériaux de construction"
+      ]
+    },
+    {
+      "secteur": "Tertiaire",
+      "sous_secteurs": [
+        "Commerce (grande distribution, vente de détail)",
+        "Télécommunications",
+        "Banques et services financiers",
+        "Transports",
+        "Tourisme",
+        "Hôtellerie",
+        "Services informatiques",
+        "Coiffure et esthétique",
+        "Restauration",
+        "Services de nettoyage et gardiennage",
+        "E-commerce",
+        "Éducation privée",
+        "Publicité et marketing",
+        "Services immobiliers"
+      ]
+    }
+  ]
+}

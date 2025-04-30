@@ -39,7 +39,7 @@ export default function Home() {
       console.log("User data:", data.token);
 
       toast.success("Connexion réussie !");
-      router.push("/forms");
+      router.push("/dashboard");
     } catch (err) {
       toast.dismiss(loadingToast);
       toast.error(

@@ -3,14 +3,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import Image from "next/image";
-import Stepper from "../components/Stepper";
-import StepperControl from "../components/StepperControl";
-import PersonalInfo from "../components/steps/PersonalInfo";
-import Details from "../components/steps/Details";
-import Review from "../components/steps/Review";
-import Final from "../components/steps/Final";
-import NonObligatoire from "../components/steps/NonObligatoire";
-import { StepperContext } from "../context/StepperContext";
+import Stepper from "../../components/Stepper";
+import StepperControl from "../../components/StepperControl";
+import PersonalInfo from "../../components/steps/PersonalInfo";
+import Details from "../../components/steps/Details";
+import Review from "../../components/steps/Review";
+import Final from "../../components/steps/Final";
+import NonObligatoire from "../../components/steps/NonObligatoire";
+import { StepperContext } from "../../context/StepperContext";
 
 export default function Forms() {
   const router = useRouter();

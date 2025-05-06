@@ -2,6 +2,7 @@
 import { StepperContext } from "../../context/StepperContext";
 import React, { useContext, useEffect, useState, useCallback } from "react";
 import activitySectors from "../../utils/data/activitySectors.json";
+import jobFunctions from "../../utils/data/jobFunctions.json";
 
 const Review = ({ setStepValid }) => {
   const { userData, setUserData } = useContext(StepperContext);
@@ -79,9 +80,9 @@ const Review = ({ setStepValid }) => {
     }
   };
 
-  useEffect(() => {
-    console.log("userData:", userData);
-  }, [userData]);
+  // useEffect(() => {
+  //   console.log("");
+  // }, [userData]);
 
   return (
     <div className="flex flex-col space-y-4">
@@ -90,21 +91,39 @@ const Review = ({ setStepValid }) => {
         <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
           Fonction exercée
         </div>
-        <input
-          type="text"
+        <select
           name="jobFunction"
           onChange={handleChange}
           value={userData["jobFunction"] || ""}
-          placeholder="Fonction exercée"
           required
           className="bg-white my-2 p-1 flex border border-gray-200 rounded w-full"
-        />
+        >
+          <option value="">Sélectionnez votre fonction</option>
+          {jobFunctions.emplois.map((emploi, index) => (
+            <option key={index} value={emploi}>
+              {emploi}
+            </option>
+          ))}
+        </select>
+        {userData.jobFunction === "Autre" && (
+          <input
+            type="text"
+            name="otherJob"
+            onChange={handleChange}
+            value={userData["otherJob"] || ""}
+            placeholder="Précisez votre fonction"
+            className="bg-white my-2 p-1 flex border border-gray-200 rounded w-full"
+          />
+        )}
         {errors.jobFunction && (
           <p className="text-red-500 text-xs">{errors.jobFunction}</p>
         )}
+        {errors.otherJob && userData.jobFunction === "Autre" && (
+          <p className="text-red-500 text-xs">{errors.otherJob}</p>
+        )}
       </div>
 
-      {/* Secteur d’activité */}
+      {/* Secteur d'activité */}
       <div className="w-full mx-2 flex-1">
         <div className="font-bold h-6 mt-3 text-gray-500 text-xs leading-8 uppercase">
           Secteur d'activité
@@ -118,13 +137,9 @@ const Review = ({ setStepValid }) => {
         >
           <option value="">Sélectionnez un secteur</option>
           {activitySectors.secteurs_d_activites.map((secteur, index) => (
-            <optgroup key={index} label={secteur.secteur}>
-              {secteur.sous_secteurs.map((sousSecteur, subIndex) => (
-                <option key={subIndex} value={sousSecteur}>
-                  {sousSecteur}
-                </option>
-              ))}
-            </optgroup>
+            <option key={index} value={secteur.secteur}>
+              {secteur.secteur}
+            </option>
           ))}
           <option value="Autre">Autre (préciser)</option>
         </select>

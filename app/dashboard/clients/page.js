@@ -50,7 +50,7 @@ const Client = () => {
         }
 
         const data = await response.json();
-        console.log("Fetched clients:", data); // Debug the API response
+
         // Filter out invalid entries and normalize data
         const validClients = data
           .filter(
@@ -205,9 +205,8 @@ const Client = () => {
                 >
                   <option value="All">Tous</option>
                   <option value="NON FIABILISER">Non fiabilisé</option>
-                  <option value="PENDING">En attente</option>
                   <option value="FIABILISEE">Fiabilisée</option>
-                  <option value="REJECTED">Rejetée</option>
+                  <option value="ANOMALIE">Anomalie</option>
                 </select>
               </div>
 
@@ -310,7 +309,7 @@ const Client = () => {
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               client.status === "FIABILISEE"
                                 ? "bg-green-100 text-green-800"
-                                : client.status === "PENDING"
+                                : client.status === "ANOMALIE"
                                 ? "bg-yellow-100 text-yellow-800"
                                 : client.status === "REJECTED"
                                 ? "bg-red-100 text-red-800"
@@ -319,8 +318,8 @@ const Client = () => {
                           >
                             {client.status === "FIABILISEE"
                               ? "Fiabilisée"
-                              : client.status === "PENDING"
-                              ? "En attente"
+                              : client.status === "ANOMALIE"
+                              ? "ANOMALIE"
                               : client.status === "REJECTED"
                               ? "Rejetée"
                               : "Non fiabilisé"}

@@ -108,10 +108,10 @@ const PersonalInfo = ({ setStepValid }) => {
     setUserData({ ...userData, [name]: uppercasedValue });
   };
 
-  useEffect(() => {
-    console.log("userData:", userData);
-    console.log("mobile2Number:", userData.mobile2Number);
-  }, [userData]);
+  // useEffect(() => {
+  //   console.log("userData:", userData);
+  //   console.log("mobile2Number:", userData.mobile2Number);
+  // }, [userData]);
 
   return (
     <div className="flex flex-col space-y-4">

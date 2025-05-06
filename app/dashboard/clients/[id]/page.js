@@ -7,22 +7,28 @@ import toast from "react-hot-toast";
 const ClientId = () => {
   const router = useRouter();
   const params = useParams();
-  const id = params?.id; // Access id safely using useParams
+  const id = params?.id;
 
   const [formData, setFormData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [updating, setUpdating] = useState(false);
+  const [fileNames, setFileNames] = useState({
+    cniFrontPath: "",
+    cniBackPath: "",
+    clientPhotoPath: "",
+    clientSignaturePath: "",
+  });
 
   useEffect(() => {
     const fetchClient = async () => {
-      if (!id) return; // Guard against undefined id
+      if (!id) return;
 
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        if (!token) throw new Error("Token not found");
+        if (!token) throw new Error("Token non trouvé");
 
         const response = await fetch(`/api/clients/${id}`, {
           headers: {
@@ -32,12 +38,14 @@ const ClientId = () => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to fetch client data");
+          throw new Error(
+            errorData.message ||
+              "Échec de la récupération des données du client"
+          );
         }
 
         const data = await response.json();
 
-        // Transform the data to match your form structure
         const transformedData = {
           id: data.id,
           authorization: data.authorization || "",
@@ -54,9 +62,9 @@ const ClientId = () => {
           issueDate: data.issueDate ? data.issueDate.split("T")[0] : "",
           issuePlace: data.issuePlace || "",
           mobile1Number: data.mobile1Number || "",
-          mobile1Prefix: data.mobile1Prefix || "", // Include prefix if exists
+          mobile1Prefix: data.mobile1Prefix || "",
           mobile2Number: data.mobile2Number || "",
-          mobile2Prefix: data.mobile2Prefix || "", // Include prefix if exists
+          mobile2Prefix: data.mobile2Prefix || "",
           email: data.email || "",
           address: data.address || "",
           residenceCountry: data.residenceCountry || "",
@@ -80,7 +88,6 @@ const ClientId = () => {
           secondNationality: data.secondNationality || "",
           bankDomiciliation: data.bankDomiciliation || "",
           status: data.status || "PENDING",
-          // Convert base64 to data URLs for images
           clientPhotoPath: data.clientPhoto
             ? `data:image/jpeg;base64,${data.clientPhoto}`
             : null,
@@ -98,7 +105,7 @@ const ClientId = () => {
         setFormData(transformedData);
       } catch (err) {
         setError(err.message);
-        if (err.message.includes("Token not found")) {
+        if (err.message.includes("Token non trouvé")) {
           router.push("/");
         }
       } finally {
@@ -115,7 +122,43 @@ const ClientId = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle form submission to update the database
+  // Handle image file change
+  const handleImageChange = (e, field) => {
+    const file =
+      e.target.files[0] || (e.dataTransfer && e.dataTransfer.files[0]);
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Veuillez sélectionner une image valide (JPEG, PNG)");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("L'image est trop volumineuse (max 5MB)");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64Data = reader.result;
+      setFormData((prev) => ({
+        ...prev,
+        [field]: base64Data,
+      }));
+      setFileNames((prev) => ({
+        ...prev,
+        [field]: file.name,
+      }));
+    };
+    reader.onerror = () => {
+      toast.error("Erreur lors de la lecture de l'image");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setUpdating(true);
@@ -123,13 +166,33 @@ const ClientId = () => {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Token not found");
 
+      // Prepare data for API, removing "data:image/...;base64," prefix
+      const payload = {
+        ...formData,
+        cniFrontPath: formData.cniFrontPath
+          ? formData.cniFrontPath.replace(/^data:image\/[a-z]+;base64,/, "")
+          : null,
+        cniBackPath: formData.cniBackPath
+          ? formData.cniBackPath.replace(/^data:image\/[a-z]+;base64,/, "")
+          : null,
+        clientPhotoPath: formData.clientPhotoPath
+          ? formData.clientPhotoPath.replace(/^data:image\/[a-z]+;base64,/, "")
+          : null,
+        clientSignaturePath: formData.clientSignaturePath
+          ? formData.clientSignaturePath.replace(
+              /^data:image\/[a-z]+;base64,/,
+              ""
+            )
+          : null,
+      };
+
       const response = await fetch(`/api/clients/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -137,10 +200,10 @@ const ClientId = () => {
         throw new Error(errorData.message || "Failed to update client data");
       }
 
-      toast.success("Données du Client modifier avec succès");
+      toast.success("Données du Client modifiées avec succès");
       router.push("/dashboard/clients");
     } catch (err) {
-      toast.error("Failed to update client data: " + err.message);
+      toast.error("Échec de la mise à jour des données: " + err.message);
     } finally {
       setUpdating(false);
     }
@@ -173,7 +236,7 @@ const ClientId = () => {
           onClick={() => router.push("/dashboard/clients")}
           className="block mt-4 mx-auto bg-indigo-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-indigo-700 transition duration-200"
         >
-          Go Back
+          Retour
         </button>
       </div>
     );
@@ -183,7 +246,7 @@ const ClientId = () => {
   if (!formData) {
     return (
       <div className="text-center text-red-500 text-lg mt-10">
-        Client not found
+        Client non trouvé
       </div>
     );
   }
@@ -422,26 +485,38 @@ const ClientId = () => {
           </div>
         </div>
 
-        {/* Media Section (View Only) */}
+        {/* Media Section */}
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MediaItem
+          <ImageUploadField
             label="CNI (Recto)"
+            field="cniFrontPath"
             filePath={formData.cniFrontPath}
+            fileName={fileNames.cniFrontPath}
+            onChange={handleImageChange}
             onClick={() => openFile(formData.cniFrontPath)}
           />
-          <MediaItem
+          <ImageUploadField
             label="CNI (Verso)"
+            field="cniBackPath"
             filePath={formData.cniBackPath}
+            fileName={fileNames.cniBackPath}
+            onChange={handleImageChange}
             onClick={() => openFile(formData.cniBackPath)}
           />
-          <MediaItem
+          <ImageUploadField
             label="Photo"
+            field="clientPhotoPath"
             filePath={formData.clientPhotoPath}
+            fileName={fileNames.clientPhotoPath}
+            onChange={handleImageChange}
             onClick={() => openFile(formData.clientPhotoPath)}
           />
-          <MediaItem
+          <ImageUploadField
             label="Signature"
+            field="clientSignaturePath"
             filePath={formData.clientSignaturePath}
+            fileName={fileNames.clientSignaturePath}
+            onChange={handleImageChange}
             onClick={() => openFile(formData.clientSignaturePath)}
           />
         </div>
@@ -501,27 +576,61 @@ const InputField = ({ label, name, value, onChange, type = "text" }) => (
   </div>
 );
 
-// Reusable Media Item Component (View Only)
-const MediaItem = ({ label, filePath, onClick }) => {
+// Reusable Image Upload Field Component (Drag-and-Drop)
+const ImageUploadField = ({
+  label,
+  field,
+  filePath,
+  fileName,
+  onChange,
+  onClick,
+}) => {
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    onChange(e, field);
+  };
+
   const imageSrc = filePath || "/assets/images/placeholder.jpg";
 
   return (
     <div>
       <p className="font-semibold text-gray-800 mb-2">{label}:</p>
-      {imageSrc ? (
-        <div
-          className="h-24 w-24 rounded-md cursor-pointer shadow-sm border border-gray-200 overflow-hidden"
-          onClick={onClick}
-        >
-          <img
-            src={imageSrc}
-            alt={label}
-            className="h-full w-full object-cover rounded-md"
-          />
-        </div>
-      ) : (
-        <p className="text-gray-500">Non disponible</p>
-      )}
+      <p className="text-sm text-gray-600 mb-2 truncate">{fileName}</p>
+      <div
+        className={`relative h-24 w-24 rounded-md shadow-sm border ${
+          isDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-200"
+        } overflow-hidden cursor-pointer`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={onClick}
+      >
+        <img
+          src={imageSrc}
+          alt={label}
+          className="h-full w-full object-cover rounded-md"
+        />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => onChange(e, field)}
+          className="absolute inset-0 opacity-0 cursor-pointer"
+          title={`Upload ${label}`}
+        />
+      </div>
     </div>
   );
 };

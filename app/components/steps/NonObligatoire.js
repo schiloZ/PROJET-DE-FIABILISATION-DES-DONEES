@@ -9,7 +9,7 @@ const NonObligatoire = () => {
     const { name, value } = e.target;
     setUserData({ ...userData, [name]: value });
   };
-  console.log(userData);
+
   return (
     <div className="flex flex-col space-y-4">
       {/* Numéro client */}

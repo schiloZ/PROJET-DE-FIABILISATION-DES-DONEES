@@ -9,7 +9,6 @@ export async function GET(request) {
   try {
     // 1. Verify JWT token from Authorization header
     const authHeader = request.headers.get("authorization");
-    console.log("Authorization Header:", authHeader);
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json(
         { message: "Authentication token missing or invalid" },
@@ -18,7 +17,6 @@ export async function GET(request) {
     }
 
     const token = authHeader.split(" ")[1];
-    console.log("Token:", token);
     let decoded;
     try {
       decoded = jwt.verify(token, JWT_SECRET);
@@ -53,7 +51,7 @@ export async function GET(request) {
       SELECT p.*
       FROM particulier p
       INNER JOIN historique h ON p.id = h.particulierId
-      WHERE h.utilisateurNom = ? and h.description= 'Nouveau client enregistré'
+      WHERE h.utilisateurNom = ? and h.description= 'Nouveau client enregistré' ORDER BY h.createdAt DESC
     `;
 
     // Execute the query with utilisateurNom as a parameter

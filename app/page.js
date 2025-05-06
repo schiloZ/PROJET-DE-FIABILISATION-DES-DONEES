@@ -36,7 +36,6 @@ export default function Home() {
       // Store both token and user data
       localStorage.setItem("token", data.token);
       localStorage.setItem("userData", JSON.stringify(data.user));
-      console.log("User data:", data.token);
 
       toast.success("Connexion réussie !");
       router.push("/dashboard");
@@ -45,7 +44,7 @@ export default function Home() {
       toast.error(
         err.message || "Une erreur est survenue. Veuillez réessayer."
       );
-      console.error("Login error:", err);
+      console.error("Erreur de connexion:", err);
     }
   };
 

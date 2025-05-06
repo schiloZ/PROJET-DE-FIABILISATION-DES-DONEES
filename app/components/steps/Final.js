@@ -112,7 +112,6 @@ const Final = ({ handleBack, resetForm }) => {
       setUserData({});
       setIsSaved(true);
     } catch (error) {
-      console.error("Error saving data:", error);
       toast.error(
         error.message === "Cet utilisateur existe déjà avec cet email."
           ? "Cet utilisateur existe déjà."
